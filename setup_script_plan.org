@@ -1,0 +1,4 @@
+* Variables
+  Client Name(used as tag for droplets)
+  m(m-of-n)
+  n(m-of-n)
