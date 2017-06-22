@@ -13,4 +13,5 @@ done
 REGIONS=(nyc1 nyc2 nyc3 sfo1 sfo2 tor1 fra1 ams2 ams3 sgp1)
 for i in {1..$SERVERS}
 do
-    NAME=${REGION[i-1]}
+    D_NAME="tStore $i"
+    D_REGION=${REGION[i-1]}
