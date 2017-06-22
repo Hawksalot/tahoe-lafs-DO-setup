@@ -1,11 +1,12 @@
 #! /bin/bash
 
-while getopts t:n:h: option
+while getopts h:m:n:t: option
 do
     case "${option}"
 	  in
 	      t) TAG=${OPTARG};;
 	      n) SHARES=${OPTARG};;
+        m) MANAERS=${OPTARG};;
 	      h) SERVERS=${OPTARG};;
     esac
 done
@@ -21,6 +22,14 @@ done
 # creates single swarm manager DO instance
 curl -X POST -H "Content-Type: application/json" -H "Authorization: Bearer $TOKEN" -d '{"name":"tStore.'$TAG'.manager","region":"nyc2","size":"512mb","image":"\'$DROPLET_ID'","ssh_keys":["10168822"],"monitoring":"True","tags":["tStore","'$TAG'"]}' "https://api.digitalocean.com/v2/droplets"
 
-for i in {1..$SERVERS}
+# fills array with node IP addresses
+for i in {1..$SERVERS+$MANAGERS}
 do
     CONNECTIONS[i-1]=$(curl -X GET -H "Content-Type: application/json" -H "Authorization: Bearer $TOKEN" "https://api.digitalocean.com/v2/droplets?tag_name=$TAG" | jq ".droplets[i-1].networks.v4[0].ip_address")
+done
+
+for i in {1..$SERVERS}
+do
+    ssh root@$CONNECTIONS[i-1]
+    docker pull akcipitro/tstore
+
