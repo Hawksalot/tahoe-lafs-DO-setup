@@ -12,7 +12,7 @@
 
 # temporary hardcoded variables
 SERVERS=10
-NAME=test2
+NAME=test
 
 REGIONS=(nyc1 nyc2 nyc3 sfo1 sfo2 tor1 fra1 ams2 ams3 blr1)
 
