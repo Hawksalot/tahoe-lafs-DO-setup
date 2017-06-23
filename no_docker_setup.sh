@@ -23,10 +23,11 @@ done
 
 for (( i=0; i<=$SERVERS; i++ ))
 do
-    until [ -a $(curl -X GET -H "Content-Type: application/json" -H "Authorization: Bearer $TOKEN" "https://api.digitalocean.com/v2/droplets?tag_name=$NAME" | jq '.droplets['$i'].networks.v4[0].ip_address')]
+    until [ -a $(curl -X GET -H "Content-Type: application/json" -H "Authorization: Bearer $TOKEN" "https://api.digitalocean.com/v2/droplets?tag_name=$NAME" | jq '.droplets['$i'].networks.v4[0].ip_address')];
+    do
           sleep 1m
     done
-        ADDRESSES[$i]=$(curl -X GET -H "Content-Type: application/json" -H "Authorization: Bearer $TOKEN" "https://api.digitalocean.com/v2/droplets?tag_name=$NAME" | jq '.droplets['$i'].networks.v4[0].ip_address')
+    ADDRESSES[$i]=$(curl -X GET -H "Content-Type: application/json" -H "Authorization: Bearer $TOKEN" "https://api.digitalocean.com/v2/droplets?tag_name=$NAME" | jq '.droplets['$i'].networks.v4[0].ip_address')
 
 done
 
