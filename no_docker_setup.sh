@@ -14,7 +14,7 @@
 SERVERS=10
 NAME=test2
 
-REGIONS=(nyc1 nyc2 nyc3 sfo1 sfo2 tor1 fra1 ams2 ams3 sgp1)
+REGIONS=(nyc1 nyc2 nyc3 sfo1 sfo2 tor1 fra1 ams2 ams3 blr1)
 
 for (( i=0; i<=$SERVERS; i++ ))
 do
@@ -23,7 +23,7 @@ done
 
 for (( i=0; i<=$SERVERS; i++ ))
 do
-    until [ -a $(curl -X GET -H "Content-Type: application/json" -H "Authorization: Bearer $TOKEN" "https://api.digitalocean.com/v2/droplets?tag_name=$NAME" | jq '.droplets['$i'].networks.v4[0].ip_address')];
+    until [ $(curl -X GET -H "Content-Type: application/json" -H "Authorization: Bearer $TOKEN" "https://api.digitalocean.com/v2/droplets?tag_name=$NAME" | jq '.droplets['$i'].networks.v4[0].ip_address') != "null" ];
     do
           sleep 1m
     done
