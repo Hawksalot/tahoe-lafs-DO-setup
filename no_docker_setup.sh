@@ -36,28 +36,28 @@ done
 
 for (( i=0; i<$SERVERS; i++ ))
 do
-    ssh -o StrictHostKeyChecking=no root@${ADDRESSES[$i]}
-    su director
-    cd /app
-    tahoe create-introducer --port=tcp:12321 --location=tcp:${ADDRESSES[$i]}:12321 --basedir=/app/introducer
-    tahoe start introducer
-    INTRODUCERS[$i]=$(cat /app/introducer/private/introducer.furl)
-    tahoe create-node --port=tcp:28561 --location=tcp:${ADDRESSES[$i]}:28561 --basedir=/app/node --nickname=$NAME.$i --introducer=${INTRODUCERS[0]}
-    exit
+    ssh -o StrictHostKeyChecking=no root@${ADDRESSES[$i]} << EOF
+        su director
+        cd /app
+        tahoe create-introducer --port=tcp:12321 --location=tcp:${ADDRESSES[$i]}:12321 --basedir=/app/introducer
+        tahoe start introducer
+        INTRODUCERS[$i]=$(cat /app/introducer/private/introducer.furl)
+        tahoe create-node --port=tcp:28561 --location=tcp:${ADDRESSES[$i]}:28561 --basedir=/app/node --nickname=$NAME.$i --introducer=${INTRODUCERS[0]}
+    EOF
 done
 
 for (( i=0; i<$SERVERS; i++ ))
 do
-    ssh -o StrictHostKeyChecking=no root@${ADDRESSES[$i]}
-    su director
-    cd /app/node/private
-    echo "introducers:" >> introducers.yaml
-    for (( n=2; n<=$SERVERS; n++ ))
-    do
-        echo "  intro$n:
-                  furl: ${INTRODUCERS[$n-1]}" >> introducers.yaml
-    done
-    cd /app
-    tahoe start node
-    exit
+    ssh -o StrictHostKeyChecking=no root@${ADDRESSES[$i]} << EOF
+        su director
+        cd /app/node/private
+        echo "introducers:" >> introducers.yaml
+        for (( n=2; n<=$SERVERS; n++ ))
+        do
+            echo "  intro$n:
+                      furl: ${INTRODUCERS[$n-1]}" >> introducers.yaml
+        done
+        cd /app
+        tahoe start node
+    EOF
 done
