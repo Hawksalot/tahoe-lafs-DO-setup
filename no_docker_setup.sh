@@ -36,7 +36,7 @@ done
 
 for (( i=0; i<$SERVERS; i++ ))
 do
-    ssh root@${ADDRESSES[$i]}
+    ssh -o StrictHostKeyChecking=no root@${ADDRESSES[$i]}
     su director
     cd /app
     tahoe create-introducer --port=tcp:12321 --location=tcp:${ADDRESSES[$i]}:12321 --basedir=/app/introducer
@@ -48,7 +48,7 @@ done
 
 for (( i=0; i<$SERVERS; i++ ))
 do
-    ssh root@${ADDRESSES[$i]}
+    ssh -o StrictHostKeyChecking=no root@${ADDRESSES[$i]}
     su director
     cd /app/node/private
     echo "introducers:" >> introducers.yaml
