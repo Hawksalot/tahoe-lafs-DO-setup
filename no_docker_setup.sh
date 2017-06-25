@@ -36,19 +36,15 @@ done
 
 for (( i=0; i<$SERVERS; i++ ))
 do
-    ssh -o StrictHostKeyChecking=no root@${ADDRESSES[$i]} /bin/bash <<EOF
-    su director
-    cd /app
-    tahoe create-introducer --port=tcp:12321 --location=tcp:${ADDRESSES[$i]}:12321 --basedir=/app/introducer
-    tahoe start introducer
-    INTRODUCERS[$i]=$(cat /app/introducer/private/introducer.furl)
-    tahoe create-node --port=tcp:28561 --location=tcp:${ADDRESSES[$i]}:28561 --basedir=/app/node --nickname=$NAME.$i --introducer=${INTRODUCERS[0]}
-EOF
+    ssh -o StrictHostKeyChecking=no root@${ADDRESSES[$i]} "su director && cd /app && tahoe create-introducer --port=tcp:12321 --location=tcp:${ADDRESSES[$i]}:12321 --basedir=/app/introducer"
+    ssh -o StrictHostKeyChecking=no root@${ADDRESSES[$i]} "tahoe start introducer"
+    INTRODUCERS[$i]=$(ssh -o StrictHostKeyChecking=no root@${ADDRESSES[$i]} "cat /app/introducer/private/introducer.furl")
+    ssh -o StrictHostKeyChecking=no root@${ADDRESSES[$i]} "tahoe create-node --port=tcp:28561 --location=tcp:'${ADDRESSES[$i]}':28561 --basedir=/app/node --nickname=$NAME.$i --introducer='${INTRODUCERS[0]}'"
 done
 
 for (( i=0; i<$SERVERS; i++ ))
 do
-    ssh -o StrictHostKeyChecking=no root@${ADDRESSES[$i]} /bin/bash <<EOF
+    ssh -o StrictHostKeyChecking=no root@${ADDRESSES[$i]}
     su director
     cd /app/node/private
     echo "introducers:" >> introducers.yaml
@@ -59,5 +55,4 @@ do
     done
     cd /app
     tahoe start node
-EOF
 done
