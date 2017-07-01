@@ -1,0 +1,16 @@
+Host launched
+Host not fully up yet
+Host not fully up yet
+Address retrieved
+Introducer created in '/app/introducer'
+Introducer started
+Node created in '/app/node'
+Host launched
+Host not fully up yet
+Host not fully up yet
+Address retrieved
+Introducer started
+Host launched
+Host not fully up yet
+Host not fully up yet
+Host not fully up yet
