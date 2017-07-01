@@ -8,18 +8,18 @@ REGIONS=(nyc1 nyc2 nyc3 sfo1 sfo2 tor1 fra1 blr1 ams2 ams3)
 
 check_node_start ()
 {
-    while [[ ! $(ssh director@${ADDRESSES[$i]} "pgrep tahoe" =~ "[0-9]{4}.[0-9]{4}") ]]; do
+    while [[ ! $(ssh -o StrictHostKeyChecking=no director@${ADDRESSES[$i]} "pgrep tahoe" =~ "[0-9]{4}.[0-9]{4}") ]]; do
 	echo "reattempting node start"
-	ssh director@${ADDRESSES[$i]} "~/.local/bin/tahoe start /app/node"
+	ssh -o StrictHostKeyChecking=no director@${ADDRESSES[$i]} "~/.local/bin/tahoe start /app/node"
     done
 }
 
 check_node_creation ()
 {
     # ends when node is set up on host
-    while [[ $(ssh director@${ADDRESSES[$i]} "[ -d /app/node ] && echo exists") != "exists" ]]; do
+    while [[ $(ssh -o StrictHostKeyChecking=no director@${ADDRESSES[$i]} "[ -d /app/node ] && echo exists") != "exists" ]]; do
 	echo "reattempting node creation"
-	ssh director@${ADDRESSES[$i]} "~/.local/bin/tahoe create-node --port=tcp:28561 --location=tcp:${ADDRESSES[$i]}:28561 --basedir=/app/node --nickname=$NAME.$i --introducer=${INTRODUCERS[0]}"
+	ssh -o StrictHostKeyChecking=no director@${ADDRESSES[$i]} "~/.local/bin/tahoe create-node --port=tcp:28561 --location=tcp:${ADDRESSES[$i]}:28561 --basedir=/app/node --nickname=$NAME.$i --introducer=${INTRODUCERS[0]}"
     done
 }
 
@@ -31,9 +31,9 @@ check_intro ()
 	if [[ $(ssh -o director@${ADDRESSES[$i]} "[ -d /app/introducer] && echo 'exists'" != "exists") ]]; then
 	    ssh -o StrictHostKeyChecking=no director@${ADDRESSES[$i]} "~/.local/bin/tahoe create-introducer --port=tcp:12321 --location=tcp:${ADDRESSES[$i]}:12321 --basedir=/app/introducer; ~/.local/bin/tahoe start /app/introducer"
 	fi
-	INTRODUCERS[$i]=$(ssh director@${ADDRESSES[$i]} "cat /app/introducer/private/introducer.furl")
-	while [[ ! $(ssh director@${ADDRESSES[$i]} "pgrep tahoe" =~ "[0-9]{4}") ]]; do
-	    ssh director@${ADDRESSES[$i]} "~/.local/bin/tahoe start /app/introducer"
+	INTRODUCERS[$i]=$(ssh -o StrictHostKeyChecking=no director@${ADDRESSES[$i]} "cat /app/introducer/private/introducer.furl")
+	while [[ ! $(ssh -o StrictHostKeyChecking=no director@${ADDRESSES[$i]} "pgrep tahoe" =~ "[0-9]{4}") ]]; do
+	    ssh -o StrictHostKeyChecking=no director@${ADDRESSES[$i]} "~/.local/bin/tahoe start /app/introducer"
 	done
     done
 }
@@ -103,8 +103,8 @@ for (( i=0; i<$SERVERS; i++ )); do
     echo "Introducer started"
     
     # creates Tahoe-LAFS node
-    ssh director@${ADDRESSES[$i]} "~/.local/bin/tahoe create-node --port=tcp:28561 --location=tcp:${ADDRESSES[$i]}:28561 --basedir=/app/node --nickname=$NAME.$i --introducer=${INTRODUCERS[0]}"
-    if [[ $(ssh director@${ADDRESSES[$i]} "[ -d /app/node ] && echo 'exists'" != "exists") ]]; then
+    ssh -o StrictHostKeyChecking=no director@${ADDRESSES[$i]} "~/.local/bin/tahoe create-node --port=tcp:28561 --location=tcp:${ADDRESSES[$i]}:28561 --basedir=/app/node --nickname=$NAME.$i --introducer=${INTRODUCERS[0]}"
+    if [[ $(ssh -o StrictHostKeyChecking=no director@${ADDRESSES[$i]} "[ -d /app/node ] && echo 'exists'" != "exists") ]]; then
 	check_node_creation
     fi
 done
@@ -112,15 +112,15 @@ done
 # creates complete introducer list on each storage node server and starts node
 for (( x=0; x<$SERVERS; x++ )); do
     # first line of introducers.yaml
-    ssh director@${ADDRESSES[$x]} "echo 'introducers:' >> /app/node/private/introducers.yaml"
+    ssh -o StrictHostKeyChecking=no director@${ADDRESSES[$x]} "echo 'introducers:' >> /app/node/private/introducers.yaml"
     # loops through formatted introducer fURLs
     for (( y=1; y<$SERVERS; y++ )); do
-	ssh director@${ADDRESSES[$x]} "echo '  intro$y:
+	ssh -o StrictHostKeyChecking=no director@${ADDRESSES[$x]} "echo '  intro$y:
     furl: ${INTRODUCERS[$y]}' >> /app/node/private/introducers.yaml"
     done
     # starts Tahoe-LAFS node
-    ssh director@${ADDRESSES[$x]} "~/.local/bin/tahoe start /app/node"
-    if [[ ! $(ssh director@${ADDRESSES[$x]} "[ pgrep tahoe ]" =~ "[0-9]{4}.[0-9]{4}") ]]; then
+    ssh -o StrictHostKeyChecking=no director@${ADDRESSES[$x]} "~/.local/bin/tahoe start /app/node"
+    if [[ ! $(ssh -o StrictHostKeyChecking=no director@${ADDRESSES[$x]} "[ pgrep tahoe ]" =~ "[0-9]{4}.[0-9]{4}") ]]; then
 	check_node_start
     fi
 done
