@@ -8,7 +8,7 @@ REGIONS=(nyc1 nyc2 nyc3 sfo1 sfo2 tor1 fra1 blr1 ams2 ams3)
 
 check_node_start ()
 {
-    while [[ ! $(ssh -o StrictHostKeyChecking=no director@${ADDRESSES[$i]} "pgrep tahoe" =~ "[0-9]{4}.[0-9]{4}") ]]; do
+    while [[ ! $(ssh -o StrictHostKeyChecking=no director@${ADDRESSES[$i]} "pgrep tahoe") =~ [0-9]{4}.[0-9]{4} ]]; do
 	echo "reattempting node start"
 	ssh -o StrictHostKeyChecking=no director@${ADDRESSES[$i]} "~/.local/bin/tahoe start /app/node"
     done
@@ -28,13 +28,13 @@ check_intro ()
     # ends when introducer is set up and started on host and the furl is stored at an array index
     while [[ ! ${INTRODUCERS[$i]} ]]; do
 	echo "reattempting introducer creation and start"
-	if [[ $(ssh -o director@${ADDRESSES[$i]} "[ -d /app/introducer] && echo 'exists'" != "exists") ]]; then
+	if [[ $(ssh -o StrictHostKeyChecking=no director@${ADDRESSES[$i]} "[ -d /app/introducer ] && echo exists") != "exists" ]]; then
 	    ssh -o StrictHostKeyChecking=no director@${ADDRESSES[$i]} "~/.local/bin/tahoe create-introducer --port=tcp:12321 --location=tcp:${ADDRESSES[$i]}:12321 --basedir=/app/introducer; ~/.local/bin/tahoe start /app/introducer"
 	fi
 	INTRODUCERS[$i]=$(ssh -o StrictHostKeyChecking=no director@${ADDRESSES[$i]} "cat /app/introducer/private/introducer.furl")
-	while [[ ! $(ssh -o StrictHostKeyChecking=no director@${ADDRESSES[$i]} "pgrep tahoe" =~ "[0-9]{4}") ]]; do
+    done
+    while [[ ! $(ssh -o StrictHostKeyChecking=no director@${ADDRESSES[$i]} "pgrep tahoe") =~ [0-9]{4} ]]; do
 	    ssh -o StrictHostKeyChecking=no director@${ADDRESSES[$i]} "~/.local/bin/tahoe start /app/introducer"
-	done
     done
 }
 
@@ -69,7 +69,7 @@ for (( i=0; i<$SERVERS; i++ )); do
     echo $i >> debug.txt
     echo "Host $i"
     # launches DigitalOcean droplet
-    NEW_IDS[$i]=$(curl -X POST -H "Content-Type: application/json" -H "Authorization: Bearer $TOKEN" -d '{"name":"tStore.'$NAME'.'$i'","region":"'${REGIONS[$i]}'","size":"512mb","image":"'$DROPLET_ID'","ssh_keys":["10168822"],"monitoring":"True","tags":["tStore","'$NAME'"]}' "https://api.digitalocean.com/v2/droplets" | jq '.droplet.id')
+    NEW_IDS[$i]=$(curl -X POST -H "Content-Type: application/json" -H "Authorization: Bearer $TOKEN" -d '{"name":"tStore.Storage.'$NAME'.'$i'","region":"'${REGIONS[$i]}'","size":"512mb","image":"'$DROPLET_ID'","ssh_keys":["10168822"],"monitoring":"True","tags":["tStore","'$NAME'"]}' "https://api.digitalocean.com/v2/droplets" | jq '.droplet.id')
     if [[ ! ${NEW_IDS[$i]} ]]; then
 	check_id
     fi
@@ -104,7 +104,7 @@ for (( i=0; i<$SERVERS; i++ )); do
     
     # creates Tahoe-LAFS node
     ssh -o StrictHostKeyChecking=no director@${ADDRESSES[$i]} "~/.local/bin/tahoe create-node --port=tcp:28561 --location=tcp:${ADDRESSES[$i]}:28561 --basedir=/app/node --nickname=$NAME.$i --introducer=${INTRODUCERS[0]}"
-    if [[ $(ssh -o StrictHostKeyChecking=no director@${ADDRESSES[$i]} "[ -d /app/node ] && echo 'exists'" != "exists") ]]; then
+    if [[ $(ssh -o StrictHostKeyChecking=no director@${ADDRESSES[$i]} "[ -d /app/node ] && echo exists") != "exists" ]]; then
 	check_node_creation
     fi
 done
@@ -120,7 +120,7 @@ for (( x=0; x<$SERVERS; x++ )); do
     done
     # starts Tahoe-LAFS node
     ssh -o StrictHostKeyChecking=no director@${ADDRESSES[$x]} "~/.local/bin/tahoe start /app/node"
-    if [[ ! $(ssh -o StrictHostKeyChecking=no director@${ADDRESSES[$x]} "[ pgrep tahoe ]" =~ "[0-9]{4}.[0-9]{4}") ]]; then
+    if [[ ! $(ssh -o StrictHostKeyChecking=no director@${ADDRESSES[$x]} "pgrep tahoe") =~ [0-9]{4}.[0-9]{4} ]]; then
 	check_node_start
     fi
 done
