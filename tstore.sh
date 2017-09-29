@@ -1,8 +1,6 @@
 #! /bin/bash
 
-# temporary hardcoded parameters
-# TODO: take NAME and SERVERS as script arguments
-NAME=script
+NAME=dstorage
 SERVERS=10
 REGIONS=(nyc1 nyc2 nyc3 sfo1 sfo2 tor1 fra1 blr1 ams2 ams3)
 
@@ -57,7 +55,7 @@ check_id ()
 }
 
 # create debug folder and initialize debug file
-# MAYBE: just created debug files as $NAME.txt?
+# MAYBE: create debug files as $NAME.txt?
 mkdir -p ~/tStore/$NAME
 cd ~/tStore/$NAME
 touch debug.txt
